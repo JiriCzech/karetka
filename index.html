@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080b0f">
+  <title>Arcana — Card Game Engine</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='7' fill='%23080b0f'/%3E%3Cpath d='M20 4 36 20 20 36 4 20 20 4Z' fill='none' stroke='%23e6c889' stroke-width='1.4'/%3E%3Ccircle cx='20' cy='20' r='3' fill='%23e6c889'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="ambient" aria-hidden="true">
+      <div class="ambient__glow ambient__glow--one"></div>
+      <div class="ambient__glow ambient__glow--two"></div>
+      <div class="ambient__runes"></div>
+      <div class="motes">
+        <i style="--x: 8%;  --d: 19s; --s: 2px;  --o: .24"></i>
+        <i style="--x: 17%; --d: 25s; --s: 1px;  --o: .35"></i>
+        <i style="--x: 29%; --d: 21s; --s: 3px;  --o: .12"></i>
+        <i style="--x: 43%; --d: 28s; --s: 1px;  --o: .3"></i>
+        <i style="--x: 56%; --d: 23s; --s: 2px;  --o: .18"></i>
+        <i style="--x: 67%; --d: 30s; --s: 1px;  --o: .26"></i>
+        <i style="--x: 78%; --d: 18s; --s: 2px;  --o: .14"></i>
+        <i style="--x: 91%; --d: 26s; --s: 3px;  --o: .2"></i>
+      </div>
+      <div class="ambient__grain"></div>
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__sigil" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M20 3.5 34.5 20 20 36.5 5.5 20 20 3.5Z" stroke="currentColor" stroke-width=".9"/>
+            <path d="M20 9 28.5 20 20 31 11.5 20 20 9Z" stroke="currentColor" stroke-width=".65" opacity=".62"/>
+            <circle cx="20" cy="20" r="3.1" stroke="currentColor" stroke-width=".8"/>
+            <path d="M20 1v5M20 34v5M1 20h5M34 20h5" stroke="currentColor" stroke-width=".7" opacity=".5"/>
+          </svg>
+        </span>
+        <span class="brand__text">
+          <strong>ARCANA</strong>
+          <em>reusable card engine</em>
+        </span>
+      </div>
+
+      <div class="power" aria-label="Current power">
+        <span class="power__rule" aria-hidden="true"></span>
+        <div class="power__label">POWER</div>
+        <div class="power__value" id="powerValue">0</div>
+        <div class="power__rule" aria-hidden="true"></div>
+        <div class="power__float-host" id="powerFloatHost" aria-hidden="true"></div>
+      </div>
+
+      <div class="controls" aria-label="Test controls">
+        <button class="control control--primary" id="drawBtn" type="button">Draw</button>
+        <button class="control" id="drawThreeBtn" type="button">Draw ×3</button>
+        <button class="control" id="fillBtn" type="button">Fill hand</button>
+        <button class="control control--quiet" id="resetBtn" type="button">Reset</button>
+      </div>
+    </header>
+
+    <div class="metrics" aria-label="Game statistics">
+      <span class="metric"><em>HAND</em><b id="handCount">0</b><i>/</i><span id="maxHandCount">10</span></span>
+      <span class="metric"><em>DECK</em><b id="deckMetric">20</b></span>
+      <span class="metric"><em>DISCARD</em><b id="discardMetric">0</b></span>
+    </div>
+
+    <main class="table" id="table">
+      <div class="table__rim" aria-hidden="true"></div>
+      <div class="table__veins" aria-hidden="true"></div>
+
+      <section class="play-zone" id="playZone" aria-label="Play area. Drag a card here to cast it.">
+        <div class="play-zone__ornament play-zone__ornament--tl" aria-hidden="true"></div>
+        <div class="play-zone__ornament play-zone__ornament--tr" aria-hidden="true"></div>
+        <div class="play-zone__ornament play-zone__ornament--bl" aria-hidden="true"></div>
+        <div class="play-zone__ornament play-zone__ornament--br" aria-hidden="true"></div>
+        <div class="play-zone__sigil" aria-hidden="true">
+          <svg viewBox="0 0 160 160" fill="none">
+            <circle cx="80" cy="80" r="54" stroke="currentColor" stroke-width=".7" stroke-dasharray="1 7"/>
+            <circle cx="80" cy="80" r="38" stroke="currentColor" stroke-width=".5"/>
+            <path d="M80 27v106M27 80h106" stroke="currentColor" stroke-width=".45" opacity=".5"/>
+            <path d="m43 43 74 74M117 43l-74 74" stroke="currentColor" stroke-width=".4" opacity=".35"/>
+            <path d="M80 54l9.5 16.5L106 80l-16.5 9.5L80 106l-9.5-16.5L54 80l16.5-9.5L80 54Z" stroke="currentColor" stroke-width=".8"/>
+          </svg>
+        </div>
+        <div class="play-zone__label" aria-hidden="true">THE PLAYING FIELD</div>
+        <div class="play-zone__hint" id="playZoneHint" aria-hidden="true">
+          <span class="play-zone__hint-line"></span>
+          <span class="play-zone__hint-text">DRAG A CARD HERE TO CAST</span>
+          <span class="play-zone__hint-line"></span>
+        </div>
+        <div class="play-zone__drop" aria-hidden="true">RELEASE TO CAST</div>
+      </section>
+
+      <div class="hand-ambient" aria-hidden="true"></div>
+
+      <section class="pile-zone pile-zone--discard" id="discardZone" aria-label="Discard pile">
+        <div class="pile-stack discard-stack" id="discardStack" aria-hidden="true"></div>
+        <div class="pile-empty" id="discardEmpty" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 6 42 24 24 42 6 24 24 6Z" stroke="currentColor" stroke-width=".8"/>
+            <path d="M24 15l9 9-9 9-9-9 9-9Z" stroke="currentColor" stroke-width=".6" opacity=".55"/>
+          </svg>
+        </div>
+        <div class="pile-meta">
+          <span class="pile-meta__label">DISCARD</span>
+          <span class="pile-meta__count" id="discardCount">0</span>
+        </div>
+      </section>
+
+      <button class="pile-zone pile-zone--deck" id="deckZone" type="button" aria-label="Draw pile. Draw a card.">
+        <span class="pile-stack deck-stack" id="deckStack" aria-hidden="true"></span>
+        <span class="pile-empty" id="deckEmpty" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 6 42 24 24 42 6 24 24 6Z" stroke="currentColor" stroke-width=".8"/>
+            <path d="M24 15l9 9-9 9-9-9 9-9Z" stroke="currentColor" stroke-width=".6" opacity=".55"/>
+          </svg>
+        </span>
+        <span class="pile-meta">
+          <span class="pile-meta__label">DRAW PILE</span>
+          <span class="pile-meta__count" id="deckCount">20</span>
+        </span>
+        <span class="deck-pulse" aria-hidden="true"></span>
+      </button>
+
+      <div class="hand-label" aria-hidden="true">
+        <span class="hand-label__line"></span>
+        <span>YOUR HAND</span>
+        <span class="hand-label__line"></span>
+      </div>
+    </main>
+
+    <div class="card-layer" id="cardLayer" aria-live="off">
+      <div class="card-probe" id="cardProbe" aria-hidden="true"></div>
+    </div>
+    <div class="effects-layer" id="effectsLayer" aria-hidden="true"></div>
+    <div class="toast-host" id="toastHost" role="status" aria-live="polite"></div>
+
+    <div class="footer-note" aria-hidden="true">
+      <span>DRAG TO CAST</span><i></i><span>CLICK THE DECK TO DRAW</span>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/animator.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/view.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
